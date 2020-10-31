@@ -10,32 +10,31 @@ class ExperimentList extends Component {
     constructor(props) {
         super(props);
         this.goToCreate = this.goToCreate.bind(this);
+        this.fetchExperiments = this.fetchExperiments.bind(this);
+        this.state = {
+            experiments: []
+        }
     }
 
     goToCreate() {
-        console.log('clicked');
-        console.log(this.props);
         this.props.history.push('/create');
     }
 
-    render() {
-
-        const hardcode = [
-            {
-                title: 'Room door closing',
-                description: 'To prove that there is biased treatment in response the closing room doors'
-            },
-            {
-                title:'Temperature affects mood',
-                description: 'On the AC more?'
-            },
-            {
-                title: 'Productivity vs Daily screentime',
-                description: 'Encourage yourself to put down your phone'
+    fetchExperiments() {
+        fetch('http://localhost:9000/experiments').then((res) => {
+            if (res.ok) {
+                res.json().then((data) => {
+                    data.forEach((experiment) => {
+                        experiment.title = `${experiment.independent} vs ${experiment.dependent}`
+                    })
+                    this.setState({experiments: data});
+                })
             }
-        ];
-        window.localStorage.setItem('experiments', JSON.stringify(hardcode));
-        const experiments = JSON.parse(window.localStorage.getItem('experiments'));
+        })
+    }
+
+    render() {
+        this.fetchExperiments();
         return (<div><Grid container spacing = {3}>
             <Grid item xs = {4}>
                  <Card onClick={this.goToCreate}>
@@ -46,7 +45,7 @@ class ExperimentList extends Component {
                      </CardActionArea>
                  </Card>
              </Grid>
-             {experiments.map((experiment) =>
+             {this.state.experiments.map((experiment) =>
                 <Grid key={experiment.title} item xs = {4}>
                     <ExperimentCard experiment = {experiment}/>
                 </Grid>
